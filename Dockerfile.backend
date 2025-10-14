@@ -1,0 +1,38 @@
+FROM python:3.13.8-slim
+
+WORKDIR /app
+
+# Install system dependencies for Python packages
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libspatialindex-dev \
+    libgl1-mesa-dev \
+    libglib2.0-0 \
+    libxrender1 \
+    libxrandr2 \
+    libxss1 \
+    libxcursor1 \
+    libxcomposite1 \
+    libasound2 \
+    libxi6 \
+    libxtst6 \
+    libxkbcommon0 \
+    libfontconfig1 \
+    libdbus-1-3 \
+    xvfb \
+    x11-utils \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+EXPOSE 8000
+
+# Set up virtual display for Qt applications
+ENV DISPLAY=:99
+ENV QT_QPA_PLATFORM=offscreen
+
+# Start Xvfb and the application
+CMD ["sh", "-c", "Xvfb :99 -screen 0 1024x768x24 & python server/enhanced_api_bridge.py"]
