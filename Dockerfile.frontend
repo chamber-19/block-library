@@ -1,0 +1,25 @@
+# Projects/Hyphae-Block-Library/Dockerfile.frontend
+FROM node:22-alpine
+
+# Create user
+RUN addgroup -S app && adduser -S app -G app
+
+WORKDIR /app
+
+# Install deps AS ROOT to avoid EACCES, then chown later
+COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
+RUN set -eux; \
+  if [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+  elif [ -f yarn.lock ];  then corepack enable yarn  && yarn install --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  else npm i; fi
+
+# Copy rest and give ownership to app
+COPY . .
+RUN chown -R app:app /app
+
+# Drop privileges AFTER deps are installed
+USER app
+
+EXPOSE 5173
+CMD ["npm","run","dev","--","--host","0.0.0.0"]

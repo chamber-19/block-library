@@ -1,0 +1,40 @@
+# -----------------------------------------
+# FILE: Projects/Hyphae-Block-Library/docker-compose.yml   (STANDALONE)
+# -----------------------------------------
+name: Hyphae-Block-Library
+
+services:
+  frontend:
+    image: hyphae-block-library-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./.env:/app/.env
+      - ./tools:/app/tools
+      - node_modules:/app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+  backend:
+    image: hyphae-block-library-backend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./server:/app/server
+      - ./.env:/app/.env
+      - ./Library:/Block-Library
+    command: python server/enhanced_api_bridge.py
+
+volumes:
+  node_modules: {}
