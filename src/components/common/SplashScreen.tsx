@@ -380,6 +380,20 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     return () => clearTimeout(timer);
   }, [currentStep, onComplete, loadingSteps]);
 
+  // Fallback: Force completion after max time to prevent infinite white screen
+  useEffect(() => {
+    const maxWaitTime = 30000; // 30 seconds max
+    const fallbackTimer = setTimeout(() => {
+      if (!isExiting) {
+        setProgress(100);
+        setIsExiting(true);
+        setTimeout(onComplete, 2000);
+      }
+    }, maxWaitTime);
+
+    return () => clearTimeout(fallbackTimer);
+  }, [isExiting, onComplete]);
+
   useEffect(() => {
     if (currentStep >= loadingSteps.length) {
       setProgress(100);

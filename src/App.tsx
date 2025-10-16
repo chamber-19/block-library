@@ -1,5 +1,5 @@
 // FILE: Projects/Hyphae-Block-Library/src/App.tsx
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { BlockLibrary } from './components/library/BlockLibrary';
 import { GridViewer } from './components/viewers/GridViewer';
@@ -33,10 +33,10 @@ function App() {
   const handleOpenBulkOps = () => setShowBulkOps(true);
   const handleCloseBulkOps = () => setShowBulkOps(false);
 
-  const handleSplashComplete = () => {
+  const handleSplashComplete = useCallback(() => {
     setIsLoaded(true);
     setTimeout(() => setShowSplash(false), 100);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 dark:from-black dark:via-gray-950 dark:to-zinc-950 transition-colors duration-300 relative">
