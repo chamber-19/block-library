@@ -9,6 +9,7 @@ import { SplashScreen } from './components/common/SplashScreen';
 import { useTheme } from './contexts/ThemeContext';
 import { Sun, Moon } from 'lucide-react';
 import { Tooltip } from './components/common/Tooltip';
+import { ErrorBoundary } from './dev/ErrorBoundary';
 
 type View = 'dashboard' | 'library' | 'viewer' | 'advanced-viewer';
 
@@ -42,50 +43,64 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-200 dark:from-black dark:via-gray-950 dark:to-zinc-950 transition-colors duration-300 relative">
-      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      <ErrorBoundary name="SplashScreen">
+        {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+      </ErrorBoundary>
 
       <div className={`transition-opacity duration-1000 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}>
-        <Tooltip content={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}>
-          <button
-            onClick={toggleTheme}
-            className="fixed top-6 right-6 z-50 w-12 h-12 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-blue-500/40 flex items-center justify-center text-slate-700 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-lg hover:shadow-xl hover:scale-110"
-          >
-            {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-          </button>
-        </Tooltip>
+        <ErrorBoundary name="ThemeToggle">
+          <Tooltip content={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}>
+            <button
+              onClick={toggleTheme}
+              className="fixed top-6 right-6 z-50 w-12 h-12 rounded-full bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-blue-500/40 flex items-center justify-center text-slate-700 dark:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all shadow-lg hover:shadow-xl hover:scale-110"
+            >
+              {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+            </button>
+          </Tooltip>
+        </ErrorBoundary>
 
-        {currentView === 'dashboard' && (
-          <Dashboard
-            onOpenLibrary={handleOpenLibrary}
-            onOpenViewer={handleOpenViewer}
-            onOpenBulkOps={handleOpenBulkOps}
-          />
-        )}
+        <ErrorBoundary name="Dashboard">
+          {currentView === 'dashboard' && (
+            <Dashboard
+              onOpenLibrary={handleOpenLibrary}
+              onOpenViewer={handleOpenViewer}
+              onOpenBulkOps={handleOpenBulkOps}
+            />
+          )}
+        </ErrorBoundary>
 
-        {currentView === 'library' && (
-          <BlockLibrary
-            onBack={handleBackToDashboard}
-            onOpenViewer={handleOpenAdvancedViewer}
-            onOpenBulkOps={handleOpenBulkOps}
-          />
-        )}
+        <ErrorBoundary name="BlockLibrary">
+          {currentView === 'library' && (
+            <BlockLibrary
+              onBack={handleBackToDashboard}
+              onOpenViewer={handleOpenAdvancedViewer}
+              onOpenBulkOps={handleOpenBulkOps}
+            />
+          )}
+        </ErrorBoundary>
 
-        {currentView === 'viewer' && (
-          <GridViewer
-            onBack={handleBackToDashboard}
-            selectedBlock={selectedBlock}
-          />
-        )}
+        <ErrorBoundary name="GridViewer">
+          {currentView === 'viewer' && (
+            <GridViewer
+              onBack={handleBackToDashboard}
+              selectedBlock={selectedBlock}
+            />
+          )}
+        </ErrorBoundary>
 
-        {currentView === 'advanced-viewer' && (
-          <AdvancedViewer
-            blockName={selectedBlock?.name || 'Block'}
-            blockData={selectedBlock}
-            onClose={handleBackToDashboard}
-          />
-        )}
+        <ErrorBoundary name="AdvancedViewer">
+          {currentView === 'advanced-viewer' && (
+            <AdvancedViewer
+              blockName={selectedBlock?.name || 'Block'}
+              blockData={selectedBlock}
+              onClose={handleBackToDashboard}
+            />
+          )}
+        </ErrorBoundary>
 
-        {showBulkOps && <BulkOperations onClose={handleCloseBulkOps} />}
+        <ErrorBoundary name="BulkOperations">
+          {showBulkOps && <BulkOperations onClose={handleCloseBulkOps} />}
+        </ErrorBoundary>
       </div>
     </div>
   );

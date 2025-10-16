@@ -7,6 +7,8 @@ import { LoadingCard } from './LoadingCard';
 import { ProgressBar } from './ProgressBar';
 import { getScreenSize, getCameraFOV, getCameraDistance } from '../../lib/responsive';
 
+console.log('🎬 SplashScreen.tsx module loading...');
+
 interface SplashScreenProps {
   onComplete: () => void;
 }
@@ -296,12 +298,16 @@ function FallingBlocks() {
 }
 
 export function SplashScreen({ onComplete }: SplashScreenProps) {
+  console.log('🎬 SplashScreen component rendering...');
+
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
   const [itemCount, setItemCount] = useState(0);
   const [targetCount, setTargetCount] = useState(0);
   const screenSize = getScreenSize();
+
+  console.log('🎬 SplashScreen state:', { currentStep, progress, isExiting, screenSize });
 
   const loadingSteps: LoadingStep[] = useMemo(() => [
     {
@@ -365,7 +371,10 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const totalDuration = useMemo(() => loadingSteps.reduce((sum, step) => sum + step.duration, 0), [loadingSteps]);
 
   useEffect(() => {
+    console.log('🎬 Step progression effect - currentStep:', currentStep, 'total steps:', loadingSteps.length);
+
     if (currentStep >= loadingSteps.length) {
+      console.log('🎬 All steps complete! Exiting splash screen...');
       setProgress(100);
       setIsExiting(true);
       const exitTimer = setTimeout(onComplete, 2000);
@@ -373,7 +382,10 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     }
 
     const stepDuration = loadingSteps[currentStep].duration;
+    console.log('🎬 Starting step', currentStep, 'with duration', stepDuration);
+
     const timer = setTimeout(() => {
+      console.log('🎬 Step', currentStep, 'complete, moving to next...');
       setCurrentStep((s) => s + 1);
     }, stepDuration);
 
@@ -382,9 +394,12 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
   // Fallback: Force completion after max time to prevent infinite white screen
   useEffect(() => {
+    console.log('🎬 Fallback timeout effect - isExiting:', isExiting);
     const maxWaitTime = 30000; // 30 seconds max
     const fallbackTimer = setTimeout(() => {
+      console.warn('⚠️ FALLBACK TIMEOUT TRIGGERED - Forcing splash screen completion!');
       if (!isExiting) {
+        console.warn('⚠️ Splash screen was stuck, forcing exit...');
         setProgress(100);
         setIsExiting(true);
         setTimeout(onComplete, 2000);
