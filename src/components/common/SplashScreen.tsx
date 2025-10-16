@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Package, Database, Layers, Zap, FileText, Grid3x3, FolderOpen, Image } from 'lucide-react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Physics, RigidBody, CuboidCollider, CylinderCollider } from '@react-three/rapier';
@@ -303,7 +303,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
   const [targetCount, setTargetCount] = useState(0);
   const screenSize = getScreenSize();
 
-  const loadingSteps: LoadingStep[] = [
+  const loadingSteps: LoadingStep[] = useMemo(() => [
     {
       id: 'database',
       label: 'Establishing secure connection',
@@ -360,9 +360,9 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
       duration: 3000,
       targetCount: 0,
     },
-  ];
+  ], []);
 
-  const totalDuration = loadingSteps.reduce((sum, step) => sum + step.duration, 0);
+  const totalDuration = useMemo(() => loadingSteps.reduce((sum, step) => sum + step.duration, 0), [loadingSteps]);
 
   useEffect(() => {
     if (currentStep >= loadingSteps.length) {
@@ -408,7 +408,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     }, progressInterval);
 
     return () => clearInterval(interval);
-  }, [currentStep, totalDuration]);
+  }, [currentStep, totalDuration, loadingSteps]);
 
   useEffect(() => {
     if (currentStep >= loadingSteps.length) return;
