@@ -80,37 +80,6 @@ git push
 
 ---
 
-## Docker Setup (Optional - More Portable)
-
-If you prefer containers:
-
-### One-Time Setup
-```bash
-# Install Docker Desktop
-# Download from https://docker.com
-```
-
-### Run Everything
-```bash
-docker-compose up
-```
-
-**Access:**
-- Frontend: http://localhost:5173
-- Backend: http://localhost:8000
-
-**Stop:**
-```bash
-docker-compose down
-```
-
-**Rebuild after dependency changes:**
-```bash
-docker-compose up --build
-```
-
----
-
 ## What to Sync vs Ignore
 
 ### ✅ Commit to Git:
@@ -142,12 +111,20 @@ pip install -r requirements.txt --upgrade
 ```
 
 ### Port already in use:
+
+**On macOS/Linux:**
 ```bash
 # Kill process on port 5173:
 lsof -ti:5173 | xargs kill -9
-
-# Or change port in vite.config.ts
 ```
+
+**On Windows (PowerShell):**
+```powershell
+# Kill process on port 5173:
+Get-NetTCPConnection -LocalPort 5173 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+```
+
+**Or change port in vite.config.ts**
 
 ---
 

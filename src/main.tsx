@@ -1,18 +1,20 @@
-// FILE: src/main.tsx
-import "./dev/consoleCapture";
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { UndoRedoProvider } from './contexts/UndoRedoContext';
+// FILE: src/main.tsx  (wrap with ErrorBoundary)
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App";
+import "./index.css";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { UndoRedoProvider } from "./contexts/UndoRedoContext";
+import { ErrorBoundary } from "./dev/ErrorBoundary";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ThemeProvider>
-      <UndoRedoProvider>
-        <App />
-      </UndoRedoProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <UndoRedoProvider>
+          <App />
+        </UndoRedoProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
