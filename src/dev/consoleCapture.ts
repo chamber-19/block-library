@@ -32,14 +32,18 @@ declare global {
 
   (["log", "info", "warn", "error", "debug"] as LogLevel[]).forEach((level) => {
     // Only wrap once.
-    if ((console as any)[`__wrapped_${level}`]) return;
+    const consoleObj = console as unknown as Record<string, unknown>;
+    if (consoleObj[`__wrapped_${level}`]) return;
     const base = orig[level];
-    (console as any)[`__wrapped_${level}`] = true;
+    consoleObj[`__wrapped_${level}`] = true;
 
-    console[level] = (...args: unknown[]) => {
+    (console[level] as (...args: unknown[]) => void) = (...args: unknown[]) => {
       try {
         logs.push({ ts: stamp(), level, args });
-      } catch {}
+      } catch (e) {
+        // Silently ignore errors during logging
+        void e;
+      }
       base(...args);
     };
   });

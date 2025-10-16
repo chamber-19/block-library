@@ -6,12 +6,12 @@ interface ErrorBoundaryProps extends React.PropsWithChildren {
   onError?: (error: Error, info: React.ErrorInfo) => void;
 }
 
-type State = { hasError: boolean; error?: any; errorInfo?: React.ErrorInfo };
+type State = { hasError: boolean; error?: Error | unknown; errorInfo?: React.ErrorInfo };
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
   state: State = { hasError: false };
 
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError(error: Error | unknown) {
     console.error("🔴 ErrorBoundary caught error:", error);
     return { hasError: true, error };
   }
@@ -26,8 +26,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
     if (!this.state.hasError) return this.props.children;
 
     const boundaryName = this.props.name ? ` [${this.props.name}]` : "";
-    const errorMessage = this.state.error?.message || String(this.state.error);
-    const errorStack = this.state.error?.stack || "";
+    const error = this.state.error as Error | null;
+    const errorMessage = error?.message || String(this.state.error);
+    const errorStack = error?.stack || "";
     const componentStack = this.state.errorInfo?.componentStack || "";
 
     return (
