@@ -20,6 +20,8 @@ function App() {
   const [showBulkOps, setShowBulkOps] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
+  console.log('App rendered - isLoaded:', isLoaded, 'showSplash:', showSplash);
+
   const handleOpenLibrary = () => setCurrentView('library');
   const handleOpenViewer = (block?: any) => {
     if (block) setSelectedBlock(block);
