@@ -378,7 +378,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
     }, stepDuration);
 
     return () => clearTimeout(timer);
-  }, [currentStep, onComplete]);
+  }, [currentStep, onComplete, loadingSteps]);
 
   useEffect(() => {
     if (currentStep >= loadingSteps.length) {
@@ -436,7 +436,7 @@ export function SplashScreen({ onComplete }: SplashScreenProps) {
 
       return () => clearInterval(countInterval);
     }
-  }, [currentStep]);
+  }, [currentStep, loadingSteps]);
 
   return (
     <div
