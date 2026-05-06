@@ -6,12 +6,17 @@ dist-ssr/
 *.local
 
 # Rust / Tauri
+target/
 frontend/src-tauri/target/
 frontend/src-tauri/WixTools/
 *.pdb
 
-# Runtime data
-data/
+# SQLite databases
+*.db
+
+# .NET build output
+processor/**/bin/
+processor/**/obj/
 
 # Build secrets
 .env.build
@@ -37,5 +42,4 @@ Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
 *.sw?

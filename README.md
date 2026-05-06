@@ -1,6 +1,17 @@
 # Block Library
 
-A Tauri 2 desktop application for browsing the Chamber 19 AutoCAD block catalog. Engineers can browse and search blocks organized by category and preview DXF files in an interactive 3D viewer built with Three.js and React Three Fiber. DWG files are listed in the catalog but cannot be previewed — they display "Preview not available." The catalog is cached locally in SQLite; the source of truth is a Google Drive folder tree. No server, no cloud database account required.
+A Tauri 2 desktop application for browsing the Chamber 19 AutoCAD block catalog. Engineers can browse and search blocks organized by category and preview DXF files in an interactive 3D viewer built with Three.js and React Three Fiber. DWG files are listed in the catalog and can be converted to DXF for preview via the bundled .NET sidecar (`processor/`). The catalog is cached locally in SQLite; the source of truth is a Google Drive folder tree. No server, no cloud database account required.
+
+## Repository layout
+
+```
+block-library/
+├── frontend/          # Tauri 2 + React + TypeScript desktop app
+│   ├── src/           # React source (components, Three.js viewer, DXF parser)
+│   └── src-tauri/     # Rust backend (Tauri commands, SQLite cache, Drive API)
+└── processor/         # .NET 8 sidecar for headless DWG → DXF conversion
+    └── DwgConverter/
+```
 
 ## Drive folder structure
 
@@ -34,15 +45,14 @@ Each top-level subfolder maps to a catalog category. Files are `.dxf` or `.dwg` 
 3. Enable the **Google Drive API** for the project.
 4. Go to **Credentials** and create an **API key**.
 5. Under **API restrictions**, restrict the key to the **Google Drive API** only.
-6. Under **Application restrictions**, restrict to the platforms you deploy from (or leave unrestricted for an internal tool).
-7. Share the root Drive folder (read-only) with the API key's associated project, or make it accessible to anyone with the link if the catalog is not sensitive.
+6. Share the root Drive folder (read-only) with anyone with the link, or restrict to your org.
 
-The root folder ID is the long string in the Drive URL when you open the folder:
+The root folder ID is the long string in the Drive URL:
 `https://drive.google.com/drive/folders/<DRIVE_ROOT_FOLDER_ID>`
 
 ## Build environment variables
 
-Set both variables in your shell (or in a `.env.build` file that is gitignored) before building:
+Set both variables before building:
 
 ```bash
 export DRIVE_ROOT_FOLDER_ID=your_folder_id_here
@@ -71,10 +81,38 @@ npm run desktop:build
 
 The installer is written to `frontend/src-tauri/target/release/bundle/`.
 
-## DXF preview limitation
+## DXF preview
 
-Only `.dxf` files can be rendered in the 3D viewer. `.dwg` is a proprietary binary format with no open parser available in the WebView context. When a DWG file is selected the viewer shows:
+Only `.dxf` files can be rendered directly in the 3D viewer — DXF is parsed client-side by the `dxf` npm package. `.dwg` files are listed in the catalog and can be converted to DXF on demand using the `processor/` sidecar (see below).
 
-> DWG format cannot be previewed directly. Convert to DXF for preview.
+## DWG → DXF conversion sidecar
 
-To preview a DWG file, export it to DXF from AutoCAD (`DXFOUT` command) and place the DXF alongside the original in the same Drive folder.
+`processor/DwgConverter` is a self-contained .NET 8 console app that converts DWG files to DXF using the ODA Platform managed API. It communicates over stdin/stdout with JSON:
+
+**Input** (one line on stdin):
+```json
+{"action": "convert", "dwg_path": "C:\\path\\to\\file.dwg"}
+```
+
+**Output** (one line on stdout):
+```json
+{"status": "ok", "dxf": "  0\nSECTION\n..."}
+```
+
+or on error:
+```json
+{"status": "error", "message": "File not found: ..."}
+```
+
+### Building the sidecar
+
+The sidecar requires the [ODA Platform .NET SDK](https://www.opendesign.com/). Add the ODA NuGet feed and restore packages:
+
+```bash
+cd processor
+dotnet restore
+dotnet build -c Release
+```
+
+The ODA NuGet source (`https://nuget.opendesign.com/`) is pre-configured in `processor/NuGet.Config`. You will need an ODA developer account to access the packages.
+
