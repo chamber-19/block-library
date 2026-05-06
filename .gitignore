@@ -1,4 +1,24 @@
-logs
+# Node
+node_modules/
+dist/
+dist-ssr/
+.cache/
+*.local
+
+# Rust / Tauri
+frontend/src-tauri/target/
+frontend/src-tauri/WixTools/
+*.pdb
+
+# Runtime data
+data/
+
+# Build secrets
+.env.build
+*.env
+
+# Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -6,18 +26,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# OS
+.DS_Store
+Thumbs.db
 
+# Editor
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.env
