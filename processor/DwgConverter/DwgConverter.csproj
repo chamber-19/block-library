@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Windows-only: ODA managed libraries require Win32 hosting -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <AssemblyName>DwgConverter</AssemblyName>
+    <RootNamespace>DwgConverter</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      ODA Platform managed .NET library.
+      Source: https://nuget.opendesign.com/  (ODA developer account required)
+      Feed is pre-configured in ../NuGet.Config.
+    -->
+    <PackageReference Include="OdaMgd" Version="24.2.0" />
+  </ItemGroup>
+
+</Project>
