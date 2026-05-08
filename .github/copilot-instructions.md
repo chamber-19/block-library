@@ -33,7 +33,7 @@ Single-purpose Tauri 2 desktop app: browse the Chamber 19 AutoCAD block catalog 
 ```ts
 import { invoke } from '@tauri-apps/api/core'
 
-const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
+const isTauri = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
 
 if (isTauri) {
   const result = await invoke<MyType>('command_name', { someArg: value })
@@ -44,6 +44,16 @@ if (isTauri) {
 
 - Drive credentials are obfuscated with `litcrypt2`. The `extern crate alloc;` workaround is required when `litcrypt2` is used in a library crate — include it at the crate root.
 - `build.rs` reads `DRIVE_ROOT_FOLDER_ID` and `DRIVE_API_KEY` from environment and XOR-obfuscates before embedding. Never read these env vars at runtime directly.
+
+## AutoCAD domain context
+
+This app displays blocks from the R3P AutoCAD block catalog. It does not run AutoCAD .NET code — DXF parsing is client-side via the `dxf` npm package. However, the blocks, layers, and naming conventions it surfaces come directly from R3P AutoCAD drawings. For domain context on how those drawings are structured, consult `autocad-knowledge`:
+
+- `glossary/terminology.md` — R3P domain abbreviations (BESS, IFC, CATL TOP, GCB, panel schedules, terminal variants)
+- `glossary/layer-conventions.md` — confirmed layer naming patterns from R3P drawings (`EQUIP`, `TEXT`, `Foundation`, grounding layers)
+- `api-surface-comparison.md` — where this app fits in the AutoCAD ecosystem (closest analogue is APS Viewer: read-only display of geometry)
+
+When working on block catalog naming, layer filtering, or search/browse features, these files define the domain vocabulary this app must speak.
 
 ## Code discipline
 
