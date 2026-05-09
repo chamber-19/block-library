@@ -61,3 +61,8 @@ When working on block catalog naming, layer filtering, or search/browse features
 - No abstractions before two real consumers exist.
 - Design tokens: background `#1C1B19`, accent `#C4884D`, success `#6B9E6B`, warning `#C4A24D`, error `#B85C5C`, info `#5C8EB8`.
 - Fonts: DM Sans (body), Instrument Serif (display), JetBrains Mono (data/technical).
+
+
+<!-- Added by chamber-19-skill-sync — required skill references for this repo's stack -->
+- Read [`docs/skills/RUST.MD`](https://github.com/chamber-19/.github/blob/main/docs/skills/RUST.MD) before any Rust work.
+- Read [`docs/skills/TAURI.MD`](https://github.com/chamber-19/.github/blob/main/docs/skills/TAURI.MD) before any Tauri work.
