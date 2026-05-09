@@ -2,21 +2,68 @@
 
 ## Purpose
 
-Single-purpose Tauri 2 desktop app: browse the Chamber 19 AutoCAD block catalog and preview DXF files in a 3D viewer. No other features.
+**UI-first Tauri 2 desktop app:** browse the Chamber 19 AutoCAD block catalog and preview DXF files in an interactive 3D viewer using React, Three.js, and React Three Fiber.
 
-## Data layer
+Per May 2026 architecture:
+- Block Library is **NOT** a backend service; it's a rich client app
+- The 3D viewer and interactive UI are essential and cannot be moved to REST
+- Tauri shell, React, and Three.js remain the production deployment
+- Launcher routes to Block Library via URL (web or Tauri)
+- DXF catalog sync and SQLite caching stay within the desktop app
 
-- **Source of truth**: Google Drive folder tree. Root folder ID and API key are build-time secrets — never hardcode them.
-- **Local cache**: SQLite at `{app_data_dir}/block-library.db`. The catalog is synced from Drive on demand; SQLite is the cache, not the primary store.
-- No Supabase. No Postgres. No Docker. No nginx.
+## Data Layer
 
-## Frontend stack
+- **Source of truth**: Google Drive folder tree. Root folder ID and API key are build-time secrets — never hardcode them
+- **Local cache**: SQLite at `{app_data_dir}/block-library.db`. The catalog is synced from Drive on demand; SQLite is the cache, not the primary store
+- No Supabase, Postgres, Docker, or nginx
+
+## Frontend Stack
 
 - React 19 + Vite + TypeScript (strict mode)
 - Three.js `^0.160` + React Three Fiber `^8` for the DXF viewer
 - Use `@react-three/drei` `OrbitControls` with `makeDefault` prop
 - DXF parsing: `dxf` npm package, `parseString` function, client-side only
 - No server-side rendering or conversion
+
+## Build and Test
+
+**Development:**
+
+```bash
+cd frontend
+npm install
+npm run desktop
+# Starts Vite dev server + Tauri shell on http://localhost:1420
+```
+
+**Production build:**
+
+```bash
+cd frontend
+npm run desktop:build
+# Outputs installer to frontend/src-tauri/target/release/bundle/
+```
+
+**Environment setup:**
+
+Set both variables before building (never hardcode):
+
+```bash
+export DRIVE_ROOT_FOLDER_ID=your_folder_id_here
+export DRIVE_API_KEY=your_api_key_here
+```
+
+## May 2026 Architecture Role
+
+Block Library is the **UI-first, 3D-aware tool** in the Chamber 19 family:
+
+- **Not a backend service** — the interactive 3D viewer cannot be delivered via REST API
+- **Desktop-first by necessity** — Tauri shell, React UI, and Three.js renderer are production essentials
+- **Launcher integration** — still accessible from `chamber-19/launcher`, but retains its Tauri packaging and rich client experience
+- **Catalog sync** — handles Google Drive sync and SQLite caching internally; no separate cache server
+- **Single-purpose** — browse and preview DXF blocks only; no modeling, no editing, no upload
+
+This is the exception to the backend-first model: Block Library proves the value of keeping 3D visualization on the desktop client where GPU and Three.js rendering are native strengths.
 
 ## DXF viewer rules
 

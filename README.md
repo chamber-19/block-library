@@ -1,12 +1,31 @@
 # Block Library
 
-A Tauri 2 desktop application for browsing the Chamber 19 AutoCAD block catalog. Engineers can browse and search blocks organized by category and preview DXF files in an interactive 3D viewer built with Three.js and React Three Fiber. DWG files are listed in the catalog but cannot be previewed — they display "Preview not available." The catalog is cached locally in SQLite; the source of truth is a Google Drive folder tree. No server, no cloud database account required.
+An interactive 3D block catalog browser for Chamber 19. Browse and preview DXF files from the AutoCAD block library using a Three.js viewer in a Tauri 2 desktop application. The catalog is cached locally in SQLite; the source of truth is a Google Drive folder tree.
 
-## Drive folder structure
+**Architecture Role:** UI-first, 3D-aware desktop app (exception to backend-first model per May 2026 architecture). Tauri, React, and Three.js viewer remain in production.
+
+---
+
+## Why Block Library is Different
+
+While most Chamber 19 tools follow the backend-first model (stateless REST services + universal launcher), Block Library is **UI-first and desktop-native**:
+
+| Aspect | Backend Services | Block Library |
+| --- | --- | --- |
+| **Deployment** | Python FastAPI on localhost | Tauri 2 desktop binary |
+| **Graphics** | REST API responses | Interactive Three.js viewer |
+| **State** | Stateless | Local SQLite cache |
+| **Catalog** | HTTP endpoints | Google Drive sync + local SQLite |
+
+Block Library proves the value of keeping 3D visualization as a desktop-first experience. GPU rendering and interactive 3D controls are better served by a native Tauri app than REST API calls.
+
+---
+
+## Drive Folder Structure
 
 The app expects a flat two-level hierarchy under a single root Drive folder:
 
-```
+```text
 [Root folder — DRIVE_ROOT_FOLDER_ID]
 ├── Relay Panels/
 │   ├── some-relay.dxf
