@@ -237,6 +237,111 @@ pub async fn open_block_in_autocad(
     Ok(())
 }
 
+/// DEV ONLY: Seeds the database with test categories and blocks for quick testing.
+#[tauri::command]
+pub async fn seed_test_data(app: AppHandle) -> Result<String, String> {
+    // Create sample categories
+    let categories = vec![
+        Category {
+            id: "cat-1".to_string(),
+            name: "Architectural".to_string(),
+            drive_id: "drive-arch".to_string(),
+            block_count: 3,
+            last_synced: Some("2026-05-11T10:00:00Z".to_string()),
+        },
+        Category {
+            id: "cat-2".to_string(),
+            name: "Electrical".to_string(),
+            drive_id: "drive-elec".to_string(),
+            block_count: 2,
+            last_synced: Some("2026-05-11T10:00:00Z".to_string()),
+        },
+        Category {
+            id: "cat-3".to_string(),
+            name: "Mechanical".to_string(),
+            drive_id: "drive-mech".to_string(),
+            block_count: 4,
+            last_synced: Some("2026-05-11T10:00:00Z".to_string()),
+        },
+    ];
+
+    // Insert categories
+    for cat in &categories {
+        cache::upsert_category(app.clone(), cat.clone()).await?;
+    }
+
+    // Create sample blocks
+    let blocks = vec![
+        BlockMeta {
+            id: "blk-1".to_string(),
+            name: "Door Single".to_string(),
+            category_id: "cat-1".to_string(),
+            drive_file_id: "drive-file-1".to_string(),
+            file_name: "door_single.dxf".to_string(),
+            last_modified: Some("2026-05-10T14:30:00Z".to_string()),
+        },
+        BlockMeta {
+            id: "blk-2".to_string(),
+            name: "Window Double".to_string(),
+            category_id: "cat-1".to_string(),
+            drive_file_id: "drive-file-2".to_string(),
+            file_name: "window_double.dxf".to_string(),
+            last_modified: Some("2026-05-10T14:30:00Z".to_string()),
+        },
+        BlockMeta {
+            id: "blk-3".to_string(),
+            name: "Wall Section".to_string(),
+            category_id: "cat-1".to_string(),
+            drive_file_id: "drive-file-3".to_string(),
+            file_name: "wall_section.dxf".to_string(),
+            last_modified: Some("2026-05-10T14:30:00Z".to_string()),
+        },
+        BlockMeta {
+            id: "blk-4".to_string(),
+            name: "Light Fixture".to_string(),
+            category_id: "cat-2".to_string(),
+            drive_file_id: "drive-file-4".to_string(),
+            file_name: "light_fixture.dxf".to_string(),
+            last_modified: Some("2026-05-10T15:00:00Z".to_string()),
+        },
+        BlockMeta {
+            id: "blk-5".to_string(),
+            name: "Switch Plate".to_string(),
+            category_id: "cat-2".to_string(),
+            drive_file_id: "drive-file-5".to_string(),
+            file_name: "switch_plate.dxf".to_string(),
+            last_modified: Some("2026-05-10T15:00:00Z".to_string()),
+        },
+        BlockMeta {
+            id: "blk-6".to_string(),
+            name: "Gear Assembly".to_string(),
+            category_id: "cat-3".to_string(),
+            drive_file_id: "drive-file-6".to_string(),
+            file_name: "gear_assembly.dxf".to_string(),
+            last_modified: Some("2026-05-10T15:30:00Z".to_string()),
+        },
+        BlockMeta {
+            id: "blk-7".to_string(),
+            name: "Pump Symbol".to_string(),
+            category_id: "cat-3".to_string(),
+            drive_file_id: "drive-file-7".to_string(),
+            file_name: "pump_symbol.dxf".to_string(),
+            last_modified: Some("2026-05-10T15:30:00Z".to_string()),
+        },
+    ];
+
+    // Insert blocks
+    for block in &blocks {
+        cache::upsert_block(app.clone(), block.clone()).await?;
+    }
+
+    Ok(format!(
+        "Seeded {} categories and {} blocks",
+        categories.len(),
+        blocks.len()
+    ))
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------

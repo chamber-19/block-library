@@ -11,6 +11,7 @@ interface SyncStatusProps {
   syncing: boolean
   syncProgress: SyncProgress | null
   onSync: () => void
+  onSeed?: () => void
 }
 
 function relativeTime(iso: string): string {
@@ -24,7 +25,7 @@ function relativeTime(iso: string): string {
   return `${Math.floor(diff / 86400)}d ago`
 }
 
-export function SyncStatus({ lastSynced, syncing, syncProgress, onSync }: SyncStatusProps) {
+export function SyncStatus({ lastSynced, syncing, syncProgress, onSync, onSeed }: SyncStatusProps) {
   const progressPct =
     syncProgress && syncProgress.total > 0
       ? Math.round((syncProgress.done / syncProgress.total) * 100)
@@ -89,53 +90,78 @@ export function SyncStatus({ lastSynced, syncing, syncProgress, onSync }: SyncSt
         >
           {lastSynced ? relativeTime(lastSynced) : 'Never synced'}
         </span>
-        <button
-          onClick={onSync}
-          disabled={syncing}
-          title="Sync catalog"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 5,
-            background: 'none',
-            border: '1px solid var(--bg-border)',
-            borderRadius: 4,
-            padding: '4px 8px',
-            cursor: syncing ? 'not-allowed' : 'pointer',
-            color: syncing ? 'var(--text-dim)' : 'var(--text)',
-            fontSize: 11,
-            fontFamily: 'var(--font-body)',
-            opacity: syncing ? 0.5 : 1,
-          }}
-        >
-          <svg
-            width="11"
-            height="11"
-            viewBox="0 0 11 11"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        <div style={{ display: 'flex', gap: 6 }}>
+          {onSeed && (
+            <button
+              onClick={onSeed}
+              disabled={syncing}
+              title="Seed test data"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                background: 'none',
+                border: '1px solid var(--bg-border)',
+                borderRadius: 4,
+                padding: '4px 8px',
+                cursor: syncing ? 'not-allowed' : 'pointer',
+                color: syncing ? 'var(--text-dim)' : 'var(--text)',
+                fontSize: 11,
+                fontFamily: 'var(--font-body)',
+                opacity: syncing ? 0.5 : 1,
+              }}
+            >
+              ⚗️ Seed
+            </button>
+          )}
+          <button
+            onClick={onSync}
+            disabled={syncing}
+            title="Sync catalog"
             style={{
-              animation: syncing ? 'spin 1s linear infinite' : 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 5,
+              background: 'none',
+              border: '1px solid var(--bg-border)',
+              borderRadius: 4,
+              padding: '4px 8px',
+              cursor: syncing ? 'not-allowed' : 'pointer',
+              color: syncing ? 'var(--text-dim)' : 'var(--text)',
+              fontSize: 11,
+              fontFamily: 'var(--font-body)',
+              opacity: syncing ? 0.5 : 1,
             }}
           >
-            <path
-              d="M9.5 5.5A4 4 0 1 1 5.5 1.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 11 11"
               fill="none"
-            />
-            <polyline
-              points="5.5,1.5 7.5,1.5 7.5,3.5"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-            />
-          </svg>
-          {syncing ? 'Syncing…' : 'Sync'}
-        </button>
+              xmlns="http://www.w3.org/2000/svg"
+              style={{
+                animation: syncing ? 'spin 1s linear infinite' : 'none',
+              }}
+            >
+              <path
+                d="M9.5 5.5A4 4 0 1 1 5.5 1.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <polyline
+                points="5.5,1.5 7.5,1.5 7.5,3.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </svg>
+            {syncing ? 'Syncing…' : 'Sync'}
+          </button>
+        </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>

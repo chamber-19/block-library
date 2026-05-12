@@ -21,6 +21,7 @@ interface CategorySidebarProps {
   selectedId: string | null
   onSelect: (id: string) => void
   onSync: () => void
+  onSeed?: () => void
   syncing: boolean
   syncProgress: SyncProgress | null
   searchQuery: string
@@ -61,6 +62,7 @@ export function CategorySidebar({
   selectedId,
   onSelect,
   onSync,
+  onSeed,
   syncing,
   syncProgress,
   searchQuery,
@@ -209,6 +211,7 @@ export function CategorySidebar({
         syncing={syncing}
         syncProgress={syncProgress}
         onSync={onSync}
+        onSeed={onSeed}
       />
     </aside>
   )

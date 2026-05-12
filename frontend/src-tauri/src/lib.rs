@@ -26,6 +26,7 @@ pub fn run() {
             commands::catalog::sync_catalog,
             commands::catalog::search_blocks,
             commands::catalog::open_block_in_autocad,
+            commands::catalog::seed_test_data,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

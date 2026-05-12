@@ -213,6 +213,23 @@ export default function App() {
   }
 
   // ---------------------------------------------------------------------------
+  // Seed test data (dev only)
+  // ---------------------------------------------------------------------------
+  function handleSeed() {
+    if (!isTauri) return
+    invoke<string>('seed_test_data')
+      .then((msg) => {
+        console.log('Seed result:', msg)
+        // Refresh category list
+        return invoke<Category[]>('list_categories')
+      })
+      .then((cats) => {
+        setCategories(cats)
+      })
+      .catch((err) => console.error('seed_test_data failed:', err))
+  }
+
+  // ---------------------------------------------------------------------------
   // Open in AutoCAD
   // ---------------------------------------------------------------------------
   function handleOpenInAutocad() {
@@ -249,6 +266,7 @@ export default function App() {
         selectedId={selectedCategory?.id ?? null}
         onSelect={handleSelectCategory}
         onSync={handleSync}
+        onSeed={handleSeed}
         syncing={syncing}
         syncProgress={syncProgress}
         searchQuery={searchQuery}
