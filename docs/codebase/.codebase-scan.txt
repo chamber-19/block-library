@@ -1,0 +1,160 @@
+
+=== DIRECTORY TREE (max depth 3, source files only) ===
+.github
+.github\copilot-instructions.md
+.github\dependabot.yml
+.gitignore
+AGENTS.md
+docs
+docs\ARCHITECTURE.md
+docs\codebase
+docs\codebase\.codebase-scan.txt
+docs\codebase\ARCHITECTURE.md
+docs\codebase\CONCERNS.md
+docs\codebase\CONVENTIONS.md
+docs\codebase\INTEGRATIONS.md
+docs\codebase\STACK.md
+docs\codebase\STRUCTURE.md
+docs\codebase\TESTING.md
+frontend
+frontend\index.html
+frontend\package-lock.json
+frontend\package.json
+frontend\src
+frontend\src\App.tsx
+frontend\src\components
+frontend\src\components\BlockCard.tsx
+frontend\src\components\BlockDetail.tsx
+frontend\src\components\BlockGrid.tsx
+frontend\src\components\BlockViewer.tsx
+frontend\src\components\CategorySidebar.tsx
+frontend\src\components\SearchBar.tsx
+frontend\src\components\SyncStatus.tsx
+frontend\src\dxf.d.ts
+frontend\src\lib
+frontend\src\lib\dxf-geometry.ts
+frontend\src\main.tsx
+frontend\src\styles
+frontend\src\styles\tokens.css
+frontend\src-tauri
+frontend\src-tauri\build.rs
+frontend\src-tauri\capabilities
+frontend\src-tauri\capabilities\default.json
+frontend\src-tauri\Cargo.lock
+frontend\src-tauri\Cargo.toml
+frontend\src-tauri\gen
+frontend\src-tauri\gen\schemas
+frontend\src-tauri\icons
+frontend\src-tauri\icons\128x128.png
+frontend\src-tauri\icons\32x32.png
+frontend\src-tauri\icons\icon.ico
+frontend\src-tauri\src
+frontend\src-tauri\src\commands
+frontend\src-tauri\src\lib.rs
+frontend\src-tauri\src\main.rs
+frontend\src-tauri\tauri.conf.json
+frontend\tsconfig.json
+frontend\vite.config.ts
+processor
+processor\DwgConverter
+processor\DwgConverter\DwgConverter.csproj
+processor\DwgConverter\Program.cs
+processor\DwgConverter.sln
+processor\NuGet.Config
+README.md
+
+=== STACK DETECTION (manifest files) ===
+No recognized manifest files found in project root.
+
+=== ENTRY POINTS ===
+No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
+
+=== LINTING AND FORMATTING CONFIG ===
+No linting or formatting config files found in project root.
+
+=== ENVIRONMENT VARIABLE TEMPLATES ===
+No .env.example or .env.template found. Identify required environment variables by searching the code and config for environment variable reads.
+
+=== TODO / FIXME / HACK (production code only, test dirs excluded) ===
+None found.
+
+=== GIT RECENT COMMITS (last 20) ===
+5eccb64 feat: add seed_test_data command and integrate into frontend for seeding test categories and blocks
+cee6084 Merge pull request #8 from chamber-19/chore/Refactor--Remove-blockService,-responsive-utilities,-supabase-client,-thumbnailService,-and-main-entry-point
+9d0035a Merge pull request #10 from chamber-19/copilot/fix-merge-conflict
+cdd86ec fix: resolve merge conflict from PR #8
+3deac48 Initial plan
+5e4f691 chore: add Dependabot configuration
+3e8d69b Merge pull request #7 from chamber-19/auto/sync-copilot-instructions-5f9ff9f
+3554b87 chore(instructions): sync Copilot instructions with org skill updates
+52daa07 docs: clarify Block Library as UI-first, 3D-native architecture (May 2026)
+c903393 Merge pull request #5 from chamber-19/chore/Refactor--Remove-blockService,-responsive-utilities,-supabase-client,-thumbnailService,-and-main-entry-point
+e17476a updated instructions
+72dc6b1 Merge pull request #4 from chamber-19/copilot/cleanup-old-web-stack-files
+e29a079 chore: repo cleanup + add processor/ DWG conversion sidecar
+49510ee Merge pull request #1 from chamber-19/chore/Refactor--Remove-blockService,-responsive-utilities,-supabase-client,-thumbnailService,-and-main-entry-point
+a54597b - Deleted blockService.ts, responsive.ts, supabase.ts, thumbnailService.ts, main.tsx, and vite-env.d.ts files. - Removed associated SQL migration files for block library schema, history tracking, and category path updates. - Cleaned up test script for FastAPI and removed update_paths.sql.
+efdfda3 Refactor: Remove blockService, responsive utilities, supabase client, thumbnailService, and main entry point
+00f7e04 Initial Hyphae Block Library import
+
+=== HIGH-CHURN FILES (last 90 days, top 20) ===
+   5 .github/copilot-instructions.md
+   4 README.md
+   2 frontend/src-tauri/src/commands/catalog.rs
+   2 frontend/src-tauri/src/lib.rs
+   2 frontend/src/App.tsx
+   2 frontend/src/components/CategorySidebar.tsx
+   2 frontend/src/components/SyncStatus.tsx
+   2 docs/ARCHITECTURE.md
+   2 .dockerignore
+   2 .gitignore
+   1 .github/dependabot.yml
+   1 processor/DwgConverter.sln
+   1 processor/DwgConverter/DwgConverter.csproj
+   1 processor/DwgConverter/Program.cs
+   1 processor/NuGet.Config
+   1 tailwind.config.js
+   1 test_thumbnail.png
+   1 tsconfig.app.json
+   1 tsconfig.json
+   1 tsconfig.node.json
+
+=== MONOREPO SIGNALS ===
+No monorepo signals detected.
+
+=== CODE METRICS ===
+Total files scanned: 52
+Total lines of code: 10705
+
+Files by language:
+  Other: 32
+  TypeScript/React: 9
+  Rust: 7
+  TypeScript: 3
+  C#: 1
+
+Top 10 largest files:
+frontend\src-tauri\Cargo.lock: 133.4KB
+frontend\src-tauri\gen\schemas\desktop-schema.json: 126.1KB
+frontend\src-tauri\gen\schemas\windows-schema.json: 126.1KB
+frontend\package-lock.json: 89.9KB
+frontend\src-tauri\gen\schemas\acl-manifests.json: 67.9KB
+frontend\src-tauri\icons\icon.ico: 21.4KB
+frontend\src-tauri\src\commands\cache.rs: 12.5KB
+frontend\src-tauri\src\commands\catalog.rs: 11.5KB
+frontend\src\App.tsx: 10.1KB
+frontend\src-tauri\icons\128x128.png: 6.2KB
+
+=== CI/CD PIPELINES ===
+No CI/CD pipelines detected.
+
+=== CONTAINERS & ORCHESTRATION ===
+No containerization configs detected.
+
+=== SECURITY & COMPLIANCE ===
+No security configs detected.
+
+=== PERFORMANCE & TESTING ===
+No performance testing configs detected.
+
+=== SCAN COMPLETE ===
