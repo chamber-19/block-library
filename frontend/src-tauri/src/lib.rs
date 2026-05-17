@@ -5,6 +5,8 @@ use_litcrypt!("ch19-block-library");
 
 pub mod commands;
 
+use desktop_toolkit::activation;
+
 include!(concat!(env!("OUT_DIR"), "/block_library_secrets.rs"));
 
 pub(crate) fn root_folder_id() -> String {
@@ -20,6 +22,10 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .invoke_handler(tauri::generate_handler![
+            activation::commands::toolkit_check_activation,
+            activation::commands::toolkit_activate_with_pin,
+            activation::commands::toolkit_deactivate,
+            activation::commands::toolkit_get_bearer_token,
             commands::catalog::list_categories,
             commands::catalog::list_blocks,
             commands::catalog::get_block_dxf,
