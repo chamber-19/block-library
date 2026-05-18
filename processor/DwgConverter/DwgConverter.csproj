@@ -1,23 +1,71 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    AutoCAD .NET plugin (class library) for block-library.
+
+    Loaded into accoreconsole.exe via NETLOAD at runtime. Exposes:
+      _BLDWG2DXF  - convert <input.dwg> to <output.dxf>
+      _BLPING     - sidecar health-check command
+
+    Targets AutoCAD 2027 (.NET 10). For 2025/2026 (.NET 8) override:
+      dotnet build `
+        -p:AcadInstallPath="C:\Program Files\Autodesk\AutoCAD 2026" `
+        -p:TargetFramework=net8.0-windows
+
+    AutoCAD assemblies are referenced with Copy Local = False per
+    AUTOCAD_DOTNET.md — they're host-loaded by accoreconsole.exe.
+
+    Microsoft.WindowsDesktop.App is required as a FrameworkReference for
+    AutoCAD .NET 8/10 plugins per the chamber-19/autocad-knowledge
+    msbuild-setup guide. Without it AutoCAD's NETLOAD reports "Unable to
+    load assembly" even though the DLL is otherwise well-formed.
+  -->
+
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <!-- Windows-only: ODA managed libraries require Win32 hosting -->
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <OutputType>Library</OutputType>
+    <Platforms>x64</Platforms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <AssemblyName>DwgConverter</AssemblyName>
-    <RootNamespace>DwgConverter</RootNamespace>
+    <AssemblyName>Chamber19.BlockLibrary.AcadPlugin</AssemblyName>
+    <RootNamespace>Chamber19.BlockLibrary.AcadPlugin</RootNamespace>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <!--
+      AutoCAD 2027's NETLOAD reads the plug-in's runtimeconfig.json to
+      resolve the shared framework. Both of these properties must be true
+      or the loader reports "Unable to load assembly" with no further
+      diagnostic. (Source: chamber-19/autocad-knowledge —
+      autocad-2027-net10-migration.md, "Target framework settings".)
+    -->
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <RollForward>LatestMinor</RollForward>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AcadInstallPath Condition="'$(AcadInstallPath)' == ''">C:\Program Files\Autodesk\AutoCAD 2027</AcadInstallPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <!--
-      ODA Platform managed .NET library.
-      Source: https://nuget.opendesign.com/  (ODA developer account required)
-      Feed is pre-configured in ../NuGet.Config.
-    -->
-    <PackageReference Include="OdaMgd" Version="24.2.0" />
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="acdbmgd">
+      <HintPath>$(AcadInstallPath)\acdbmgd.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="acmgd">
+      <HintPath>$(AcadInstallPath)\acmgd.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="accoremgd">
+      <HintPath>$(AcadInstallPath)\accoremgd.dll</HintPath>
+      <Private>False</Private>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
   </ItemGroup>
 
 </Project>

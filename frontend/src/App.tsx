@@ -69,17 +69,23 @@ function useDebounce<T>(value: T, delay: number): T {
 // ---------------------------------------------------------------------------
 
 export default function App() {
-  const [categories, setCategories]           = useState<Category[]>([])
+  const [categories, setCategories]             = useState<Category[]>([])
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null)
-  const [blocks, setBlocks]                   = useState<BlockMeta[]>([])
-  const [selectedBlock, setSelectedBlock]     = useState<BlockMeta | null>(null)
+  const [blocks, setBlocks]                     = useState<BlockMeta[]>([])
+  const [selectedBlock, setSelectedBlock]       = useState<BlockMeta | null>(null)
   // undefined = loading / fetching, null = no data / not loaded, string = loaded
-  const [dxfText, setDxfText]                 = useState<string | null | undefined>(null)
-  const [dims, setDims]                       = useState<Dims | null>(null)
-  const [searchQuery, setSearchQuery]         = useState('')
-  const [syncing, setSyncing]                 = useState(false)
-  const [syncProgress, setSyncProgress]       = useState<SyncProgress | null>(null)
-  const [blocksLoading, setBlocksLoading]     = useState(false)
+  const [dxfText, setDxfText]                   = useState<string | null | undefined>(null)
+  const [dxfError, setDxfError]                 = useState<string | null>(null)
+  const [converting, setConverting]             = useState<boolean>(false)
+  const [dims, setDims]                         = useState<Dims | null>(null)
+  const [searchQuery, setSearchQuery]           = useState('')
+  const [syncing, setSyncing]                   = useState(false)
+  const [syncProgress, setSyncProgress]         = useState<SyncProgress | null>(null)
+  const [blocksLoading, setBlocksLoading]       = useState(false)
+
+  // Tracks the most recent in-flight DXF fetch so out-of-order responses
+  // can be discarded if the user clicks a different block mid-load.
+  const dxfReqIdRef = useRef(0)
 
   const debouncedSearch = useDebounce(searchQuery, 280)
 
@@ -119,6 +125,8 @@ export default function App() {
     setSelectedCategory(cat)
     setSelectedBlock(null)
     setDxfText(null)
+    setDxfError(null)
+    setConverting(false)
     setDims(null)
     setSearchQuery('')
 
@@ -137,11 +145,12 @@ export default function App() {
   }
 
   // ---------------------------------------------------------------------------
-  // Block selection → fetch DXF
+  // Block selection → fetch DXF (auto-converts DWG via sidecar in Rust)
   // ---------------------------------------------------------------------------
   function handleSelectBlock(block: BlockMeta) {
     setSelectedBlock(block)
     setDims(null)
+    setDxfError(null)
     setDxfText(undefined) // loading state
 
     if (!isTauri) {
@@ -149,11 +158,24 @@ export default function App() {
       return
     }
 
-    invoke<string | null>('get_block_dxf', { blockId: block.id })
-      .then((text) => setDxfText(text ?? null))
-      .catch((err) => {
-        console.error('get_block_dxf failed:', err)
+    const isDwg = block.fileName.toLowerCase().endsWith('.dwg')
+    setConverting(isDwg) // optimistic — Rust may serve from cache instantly
+
+    const reqId = ++dxfReqIdRef.current
+
+    invoke<string>('get_block_dxf', { driveFileId: block.driveFileId })
+      .then((text) => {
+        if (dxfReqIdRef.current !== reqId) return // stale response
+        setDxfText(text)
+        setConverting(false)
+      })
+      .catch((err: unknown) => {
+        if (dxfReqIdRef.current !== reqId) return
+        const msg = typeof err === 'string' ? err : (err as Error)?.message ?? String(err)
+        console.error('get_block_dxf failed:', msg)
         setDxfText(null)
+        setDxfError(msg)
+        setConverting(false)
       })
   }
 
@@ -197,7 +219,6 @@ export default function App() {
         if (result.errors.length > 0) {
           console.warn('Sync errors:', result.errors)
         }
-        // Refresh category list
         return invoke<Category[]>('list_categories')
       })
       .then((cats) => {
@@ -213,13 +234,14 @@ export default function App() {
   }
 
   // ---------------------------------------------------------------------------
-  // Open in AutoCAD
+  // Open in AutoCAD (uses external opener; works for both DXF and DWG)
   // ---------------------------------------------------------------------------
   function handleOpenInAutocad() {
     if (!selectedBlock || !isTauri) return
-    invoke('open_block_in_autocad', { blockId: selectedBlock.id }).catch((err) =>
-      console.error('open_block_in_autocad failed:', err)
-    )
+    invoke('open_block_in_autocad', {
+      driveFileId: selectedBlock.driveFileId,
+      fileName: selectedBlock.fileName,
+    }).catch((err) => console.error('open_block_in_autocad failed:', err))
   }
 
   // ---------------------------------------------------------------------------
@@ -264,10 +286,10 @@ export default function App() {
         loading={blocksLoading}
       />
 
-      {/* Right panel — 380px fixed */}
+      {/* Right panel — 420px fixed (wider to accommodate viewer toolbar) */}
       <aside
         style={{
-          width: 380,
+          width: 420,
           flexShrink: 0,
           borderLeft: '1px solid var(--bg-border)',
           display: 'flex',
@@ -277,11 +299,13 @@ export default function App() {
           background: 'var(--bg)',
         }}
       >
-        {/* 3-D viewer */}
+        {/* Viewer (2D / 3D) */}
         <div style={{ padding: 12, flexShrink: 0 }}>
           <BlockViewer
             block={selectedBlock}
             dxfText={dxfText}
+            converting={converting}
+            errorMessage={dxfError}
             onBoundsChange={handleBoundsChange}
           />
         </div>

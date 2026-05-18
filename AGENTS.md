@@ -2,7 +2,7 @@
 
 ## What this is
 
-Block Library is a Tauri 2 desktop application for browsing the Chamber 19 AutoCAD block catalog stored in Google Drive. Engineers can browse blocks by category, search by name, and preview DXF files in an interactive 3D viewer (Three.js + React Three Fiber). DWG files are listed in the catalog but cannot be previewed — they display "Preview not available."
+Block Library is a Tauri 2 desktop application for browsing the Chamber 19 AutoCAD block catalog stored in Google Drive. Engineers can browse blocks by category, search by name, and preview both DXF and DWG files in an interactive viewer with **2D (orthographic top-down) and 3D (perspective orbit) modes** powered by Three.js + React Three Fiber. DWG files are converted to DXF on the fly by an AutoCAD .NET plugin (`processor/DwgConverter` → `BlockLibrary.AcadPlugin.dll`) that the Rust shell loads into `accoreconsole.exe` via NETLOAD. When AutoCAD or the plugin DLL is unavailable, the UI falls back to "Preview not available."
 
 The catalog is cached in a local SQLite database at `{app_data_dir}/block-library.db`. There is no server to run and no cloud database account required.
 
@@ -54,15 +54,35 @@ Three.js and React Three Fiber live in the `block-library` frontend only. They a
 
 The 3D DXF viewer is specific to this app's use case. Desktop-toolkit is a shared framework consumed by multiple apps; adding a Three.js dependency there would force it on apps that have no use for 3D rendering.
 
-## DXF-only preview
+## DXF rendering + DWG via local AutoCAD plugin
 
-Only `.dxf` files can be rendered in the 3D viewer. DWG is a proprietary binary format with no open parser available in the browser/WebView context.
+DXF files are parsed client-side using the `dxf` npm package (`parseString`)
+and rendered with Three.js. There is no server-side conversion — that ban
+still stands.
 
-When a user selects a `.dwg` file the viewer displays:
+DWG support is handled by a **local AutoCAD .NET plugin**, not a server:
 
-> DWG format cannot be previewed directly. Convert to DXF for preview.
+- `processor/DwgConverter/` — .NET 8 class library targeting the Autodesk
+  `acdbmgd` / `acmgd` / `accoremgd` assemblies (`Copy Local = False`). It
+  exposes `[CommandMethod("BLDWG2DXF")]` and `[CommandMethod("BLPING")]`.
+- The Rust side downloads the DWG bytes from Drive, writes a sanitized
+  temp file, generates a one-shot `.scr` script that NETLOADs the plugin
+  and invokes `_BLDWG2DXF <input> <output>`, then spawns
+  `accoreconsole.exe`. It scrapes stdout for the plugin's `BL_OK:` /
+  `BL_ERROR:` markers and reads the resulting DXF from disk. The
+  returned DXF is cached in the same `dxf_cache` table as native DXFs.
+- If `frontend/src-tauri/resources/BlockLibrary.AcadPlugin.dll` is absent
+  *or* `accoreconsole.exe` is not in a known AutoCAD install path, the
+  `dwg_converter_available` Tauri command returns false and the viewer
+  shows "preview not available" instead of attempting conversion.
+- The plugin follows the Chamber 19 AutoCAD .NET conventions from
+  `AUTOCAD_DOTNET.md` (headless `Database`, `ReadDwgFile`, transaction
+  wrapping for any future entity modifications, no COM, `Copy Local = False`
+  on Autodesk assemblies). See `processor/README.md` for build and
+  packaging instructions.
 
-DXF files are parsed client-side using the `dxf` npm package (`parseString`). No server-side conversion step is required or permitted.
+ODA is **not** a dependency. Do not re-add the OdaMgd NuGet feed or the
+Teigha namespace.
 
 ## Environment verification
 
@@ -72,9 +92,15 @@ cargo check
 
 # Type-check and bundle the frontend (from frontend/):
 npm run build
+
+# Build the AutoCAD .NET plugin (from processor/, requires AutoCAD installed):
+dotnet build DwgConverter.sln
 ```
 
-Both commands must pass clean before any PR is considered ready.
+All three commands must pass clean before any PR is considered ready.
+The .NET build is only required when you touched `processor/`, and only
+works on a machine with AutoCAD installed (it references host-loaded
+Autodesk assemblies from the AutoCAD install directory).
 
 ## Forbidden
 

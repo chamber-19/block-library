@@ -1,8 +1,7 @@
-import React, { Suspense, useEffect, useMemo, useRef } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
-import * as THREE from 'three'
-import { dxfToGroup } from '../lib/dxf-geometry'
+import React, { useCallback, useState } from 'react'
+import { Viewer2D } from './Viewer2D'
+import { Viewer3D } from './Viewer3D'
+import { ViewerToolbar, type ViewerMode } from './ViewerToolbar'
 
 interface BlockMeta {
   id: string
@@ -22,140 +21,92 @@ interface Dims {
 interface BlockViewerProps {
   block: BlockMeta | null
   dxfText: string | null | undefined
+  /** True while a DWG is being auto-converted to DXF via the sidecar. */
+  converting?: boolean
+  /** Optional message returned when conversion failed or is unavailable. */
+  errorMessage?: string | null
   onBoundsChange: (dims: Dims) => void
 }
 
-// ---------------------------------------------------------------------------
-// DxfScene — rendered inside <Canvas>
-// ---------------------------------------------------------------------------
+const VIEWER_HEIGHT = 320
 
-interface DxfSceneProps {
-  dxfText: string
-  onBoundsChange: (dims: Dims) => void
+const containerStyle: React.CSSProperties = {
+  width: '100%',
+  height: VIEWER_HEIGHT,
+  background: 'var(--bg-raised)',
+  borderRadius: 6,
+  overflow: 'hidden',
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 }
 
-function DxfScene({ dxfText, onBoundsChange }: DxfSceneProps) {
-  const { camera } = useThree()
-  const groupRef = useRef<THREE.Group>(null)
-
-  const group = useMemo(() => {
-    try {
-      return dxfToGroup(dxfText)
-    } catch {
-      return new THREE.Group()
-    }
-  }, [dxfText])
-
-  useEffect(() => {
-    if (!groupRef.current) return
-
-    // Fit camera to bounding box
-    const box = new THREE.Box3().setFromObject(groupRef.current)
-    const size = new THREE.Vector3()
-    const center = new THREE.Vector3()
-    box.getSize(size)
-    box.getCenter(center)
-
-    const maxDim = Math.max(size.x, size.y, size.z, 0.001)
-    const fov = (camera as THREE.PerspectiveCamera).fov ?? 45
-    const fovRad = (fov * Math.PI) / 180
-    const dist = (maxDim / 2) / Math.tan(fovRad / 2) * 1.5
-
-    camera.position.set(center.x, center.y, center.z + dist)
-    camera.lookAt(center)
-    camera.updateProjectionMatrix()
-
-    onBoundsChange({
-      w: parseFloat(size.x.toFixed(2)),
-      h: parseFloat(size.y.toFixed(2)),
-      d: parseFloat(size.z.toFixed(2)),
-    })
-
-    return () => {
-      // Dispose all geometries and materials on unmount
-      group.traverse((obj) => {
-        if ((obj as THREE.Mesh).geometry) {
-          ;(obj as THREE.Mesh).geometry.dispose()
-        }
-        if ((obj as THREE.Mesh).material) {
-          const mat = (obj as THREE.Mesh).material
-          if (Array.isArray(mat)) {
-            mat.forEach((m) => m.dispose())
-          } else {
-            ;(mat as THREE.Material).dispose()
-          }
-        }
-      })
-    }
-  }, [group, camera, onBoundsChange])
-
-  return <primitive ref={groupRef} object={group} />
+const placeholderStyle: React.CSSProperties = {
+  color: 'var(--text-dim)',
+  fontSize: 13,
+  textAlign: 'center',
+  padding: '0 16px',
+  fontFamily: 'var(--font-body)',
+  lineHeight: 1.45,
 }
 
-// ---------------------------------------------------------------------------
-// Spinner — used outside Canvas
-// ---------------------------------------------------------------------------
+const hintStyle: React.CSSProperties = {
+  marginTop: 6,
+  fontSize: 11,
+  color: 'var(--text-dim)',
+  textAlign: 'center',
+  fontFamily: 'var(--font-mono)',
+  letterSpacing: '0.02em',
+}
 
-function Spinner() {
+function Spinner({ label }: { label?: string }) {
   return (
     <div
       style={{
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         height: '100%',
+        gap: 10,
       }}
     >
       <div
         style={{
-          width: 32,
-          height: 32,
+          width: 28,
+          height: 28,
           border: '3px solid var(--bg-border)',
           borderTopColor: 'var(--accent)',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }}
       />
+      {label ? <span style={{ ...placeholderStyle, fontSize: 11 }}>{label}</span> : null}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
 
-// ---------------------------------------------------------------------------
-// BlockViewer
-// ---------------------------------------------------------------------------
+export function BlockViewer({
+  block,
+  dxfText,
+  converting,
+  errorMessage,
+  onBoundsChange,
+}: BlockViewerProps) {
+  const [mode, setMode] = useState<ViewerMode>('2d')
+  const [showGrid, setShowGrid] = useState<boolean>(true)
+  const [autoRotate, setAutoRotate] = useState<boolean>(false)
+  const [fitNonce, setFitNonce] = useState<number>(0)
+  const [layers, setLayers] = useState<string[]>([])
 
-export function BlockViewer({ block, dxfText, onBoundsChange }: BlockViewerProps) {
-  const containerStyle: React.CSSProperties = {
-    width: '100%',
-    height: 280,
-    background: 'var(--bg-raised)',
-    borderRadius: 6,
-    overflow: 'hidden',
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }
+  const handleFit = useCallback(() => setFitNonce((n) => n + 1), [])
+  const handleLayers = useCallback((next: string[]) => setLayers(next), [])
 
-  const placeholderStyle: React.CSSProperties = {
-    color: 'var(--text-dim)',
-    fontSize: 13,
-    textAlign: 'center',
-    padding: '0 16px',
-    fontFamily: 'var(--font-body)',
-  }
-
-  const hintStyle: React.CSSProperties = {
-    marginTop: 6,
-    fontSize: 11,
-    color: 'var(--text-dim)',
-    textAlign: 'center',
-    fontFamily: 'var(--font-mono)',
-    letterSpacing: '0.02em',
-  }
-
+  // -------------------------------------------------------------------------
   // No block selected
+  // -------------------------------------------------------------------------
   if (!block) {
     return (
       <div>
@@ -166,54 +117,106 @@ export function BlockViewer({ block, dxfText, onBoundsChange }: BlockViewerProps
     )
   }
 
+  // -------------------------------------------------------------------------
+  // DWG conversion in progress
+  // -------------------------------------------------------------------------
+  if (converting) {
+    return (
+      <div>
+        <div style={containerStyle}>
+          <Spinner label="Converting DWG → DXF…" />
+        </div>
+        <p style={hintStyle}>Running embedded ODA sidecar</p>
+      </div>
+    )
+  }
+
+  // -------------------------------------------------------------------------
   // Loading (dxfText === undefined means fetch in progress)
+  // -------------------------------------------------------------------------
   if (dxfText === undefined) {
     return (
       <div>
         <div style={containerStyle}>
-          <Spinner />
+          <Spinner label="Loading preview…" />
         </div>
-        <p style={hintStyle}>Loading preview&hellip;</p>
       </div>
     )
   }
 
-  // Fetch returned null — no DXF available
+  // -------------------------------------------------------------------------
+  // Conversion failed or DXF unavailable
+  // -------------------------------------------------------------------------
   if (dxfText === null) {
     return (
       <div>
         <div style={containerStyle}>
-          <span style={placeholderStyle}>Preview not available for<br /><strong>{block.name}</strong></span>
+          <span style={placeholderStyle}>
+            {errorMessage ? (
+              <>
+                {errorMessage}
+                <br />
+                <strong style={{ color: 'var(--text)' }}>{block.name}</strong>
+              </>
+            ) : (
+              <>
+                Preview not available for
+                <br />
+                <strong style={{ color: 'var(--text)' }}>{block.name}</strong>
+              </>
+            )}
+          </span>
         </div>
       </div>
     )
   }
 
-  // We have DXF text — render the 3-D canvas
+  // -------------------------------------------------------------------------
+  // Render — pick the active viewer based on mode.
+  // -------------------------------------------------------------------------
+
+  const hint =
+    layers.length > 0
+      ? `${layers.length} layer${layers.length === 1 ? '' : 's'}`
+      : undefined
+
   return (
     <div>
+      <ViewerToolbar
+        mode={mode}
+        onModeChange={setMode}
+        showGrid={showGrid}
+        onGridToggle={() => setShowGrid((g) => !g)}
+        autoRotate={autoRotate}
+        onAutoRotateToggle={() => setAutoRotate((r) => !r)}
+        onFit={handleFit}
+        hint={hint}
+      />
       <div style={containerStyle}>
-        <Canvas
-          style={{ width: '100%', height: '100%' }}
-          frameloop="demand"
-          camera={{ fov: 45, near: 0.1, far: 10000, position: [0, 0, 10] }}
-        >
-          {/* scene background set via Canvas style, not scene.background */}
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[5, 10, 5]} intensity={0.8} />
-          <OrbitControls
-            makeDefault
-            enableDamping
-            dampingFactor={0.05}
-            autoRotate={false}
+        {mode === '2d' ? (
+          <Viewer2D
+            dxfText={dxfText}
+            showGrid={showGrid}
+            fitNonce={fitNonce}
+            onBoundsChange={onBoundsChange}
+            onLayersChange={handleLayers}
           />
-          <gridHelper args={[100, 20, '#333333', '#333333']} />
-          <Suspense fallback={null}>
-            <DxfScene dxfText={dxfText} onBoundsChange={onBoundsChange} />
-          </Suspense>
-        </Canvas>
+        ) : (
+          <Viewer3D
+            dxfText={dxfText}
+            showGrid={showGrid}
+            autoRotate={autoRotate}
+            fitNonce={fitNonce}
+            onBoundsChange={onBoundsChange}
+            onLayersChange={handleLayers}
+          />
+        )}
       </div>
-      <p style={hintStyle}>Drag to rotate &middot; Scroll to zoom &middot; Right-drag to pan</p>
+      <p style={hintStyle}>
+        {mode === '2d'
+          ? 'Drag to pan · Scroll to zoom · F to fit'
+          : 'Drag to orbit · Right-drag to pan · Scroll to zoom'}
+      </p>
     </div>
   )
 }
