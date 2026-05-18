@@ -11,7 +11,7 @@
     "desktop:build": "tauri build"
   },
   "dependencies": {
-    "@chamber-19/desktop-toolkit": "2.7.0",
+    "@chamber-19/desktop-toolkit": "2.7.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.160.0",
