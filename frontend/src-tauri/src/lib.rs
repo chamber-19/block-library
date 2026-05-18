@@ -32,6 +32,7 @@ pub fn run() {
             commands::catalog::sync_catalog,
             commands::catalog::search_blocks,
             commands::catalog::open_block_in_autocad,
+            commands::catalog::dwg_converter_available,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    Shared build defaults for all projects under processor/.
+
+    The AcadInstallPath property points to the AutoCAD install directory
+    that hosts the .NET runtime assemblies (acdbmgd / acmgd / accoremgd).
+    Override on the command line:
+      dotnet build -p:AcadInstallPath="C:\Program Files\Autodesk\AutoCAD 2025"
+
+    The default targets the current Chamber 19 baseline (AutoCAD 2027,
+    which ships .NET 10). If you're running 2025/2026 (which ship .NET 8)
+    pass the path AND override TargetFramework via -p:TargetFramework=net8.0-windows.
+  -->
+  <PropertyGroup>
+    <AcadInstallPath Condition="'$(AcadInstallPath)' == ''">C:\Program Files\Autodesk\AutoCAD 2027</AcadInstallPath>
+  </PropertyGroup>
+</Project>

@@ -43,3 +43,6 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sw?
+
+# Claude Code worktrees + harness state
+.claude/

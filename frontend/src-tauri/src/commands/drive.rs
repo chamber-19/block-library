@@ -89,3 +89,27 @@ pub async fn download_file(file_id: &str, api_key: &str) -> Result<String, Strin
     let content = resp.text().await.map_err(|e| e.to_string())?;
     Ok(content)
 }
+
+/// Downloads the raw bytes of a file. Used for binary formats such as DWG that
+/// cannot be safely round-tripped through a String (which would corrupt non
+/// UTF-8 sequences).
+pub async fn download_file_bytes(file_id: &str, api_key: &str) -> Result<Vec<u8>, String> {
+    let client = build_client()?;
+    let url = format!(
+        "https://www.googleapis.com/drive/v3/files/{file_id}?alt=media&key={api_key}"
+    );
+    let resp = client
+        .get(&url)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body = resp.text().await.unwrap_or_default();
+        return Err(format!("Drive download error {status}: {body}"));
+    }
+
+    let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
+    Ok(bytes.to_vec())
+}
