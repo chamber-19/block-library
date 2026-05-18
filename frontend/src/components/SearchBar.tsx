@@ -47,6 +47,9 @@ export function SearchBar({ value, onChange, placeholder = 'Search blocks…' }:
         />
       </svg>
       <input
+        id="block-library-search"
+        name="block-library-search"
+        autoComplete="off"
         ref={inputRef}
         type="text"
         value={value}
