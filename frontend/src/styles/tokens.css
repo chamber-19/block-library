@@ -1,18 +1,26 @@
+/*
+ * Design tokens for block-library.
+ *
+ * Bridges to desktop-toolkit --ch-* tokens (set by ToolkitThemeProvider
+ * in main.tsx). Hex literals act as fallbacks for the initial paint
+ * before React mounts the provider, and for the local-only tokens the
+ * toolkit does not ship matching variables for.
+ */
 :root {
-  --bg: #1C1B19;
-  --bg-raised: #252420;
-  --bg-border: #333230;
-  --accent: #C4884D;
+  --bg:         var(--ch-bg, #1C1B19);
+  --bg-raised:  #252420;
+  --bg-border:  var(--ch-border, #333230);
+  --accent:     var(--ch-accent, #C4884D);
   --accent-dim: rgba(196, 136, 77, 0.15);
-  --success: #6B9E6B;
-  --warning: #C4A24D;
-  --error: #B85C5C;
-  --info: #5C8EB8;
-  --text: #E8E6E2;
-  --text-dim: #8A8680;
-  --font-body: 'DM Sans', sans-serif;
-  --font-display: 'Instrument Serif', serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --success:    #6B9E6B;
+  --warning:    #C4A24D;
+  --error:      #B85C5C;
+  --info:       #5C8EB8;
+  --text:       #E8E6E2;
+  --text-dim:   #8A8680;
+  --font-body:    var(--ch-font-ui, 'DM Sans'), sans-serif;
+  --font-display: var(--ch-font-display, 'Instrument Serif'), serif;
+  --font-mono:    var(--ch-font-mono, 'JetBrains Mono'), monospace;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: var(--font-body); }
